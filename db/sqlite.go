@@ -58,3 +58,27 @@ func (db *DB) GetAgentByName(name string) (*entities.Agent, error) {
 
 	return &agent, nil
 }
+
+// GetAgentsAndTokens Listar agentes y sus tokens
+func (db *DB) GetAgentsAndTokens() (*entities.Agents, error) {
+	query := `SELECT name, token FROM agents`
+	rows, err := db.Conn.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var agents entities.Agents
+	var agent entities.Agent
+	for rows.Next() {
+		err := rows.Scan(&agent.Name, &agent.Token)
+		if err != nil {
+			return nil, err
+		}
+		agents = append(agents, agent)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &agents, nil
+}
