@@ -7,8 +7,6 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-const baseURL = "https://api.spacetraders.io/v2"
-
 // AgentService provee metodos de interacción con la API
 type AgentService struct {
 	client *resty.Client
@@ -30,7 +28,7 @@ func (s *AgentService) RegisterAgent(username string, faction string) (*entities
 			"faction": faction,
 		}).
 		SetResult(response).
-		Post(baseURL + "/register")
+		Post(BASEURL + "/register")
 
 	if err != nil {
 		return nil, err
@@ -47,7 +45,7 @@ func (s *AgentService) GetAgentInfo(token string) (*entities.Agent, error) {
 	resp, err := s.client.R().
 		SetAuthToken(token).
 		SetResult(response).
-		Get(baseURL + "/my/agent")
+		Get(BASEURL + "/my/agent")
 	if err != nil {
 		return nil, err
 	}
