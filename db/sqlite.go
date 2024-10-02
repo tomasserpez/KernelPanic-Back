@@ -7,6 +7,7 @@ import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
+	"strings"
 )
 
 // La DB está envuelta en una conección SQLite3
@@ -23,7 +24,7 @@ func NewDB(filepath string) *DB {
 	query := `
 	CREATE TABLE IF NOT EXISTS agents (
 	    id INTEGER PRIMARY KEY AUTOINCREMENT,
-	    name TEXT,
+	    accountId TEXT,
 	    symbol TEXT,
 	    headquarters TEXT,
 	    credits INTEGER,
@@ -37,18 +38,19 @@ func NewDB(filepath string) *DB {
 
 // SaveAgent guarda el agente en la base de datos SQLite
 func (db *DB) SaveAgent(agent *entities.Agent) error {
-	query := `INSERT INTO agents (name, symbol, headquarters, credits, token) VALUES (?,?,?,?,?)`
-	_, err := db.Conn.Exec(query, agent.Symbol, agent.Symbol, agent.Headquarters, agent.Credits, agent.Token)
+	query := `INSERT INTO agents (accountId, symbol, headquarters, credits, token) VALUES (?,?,?,?,?)`
+	_, err := db.Conn.Exec(query, agent.AccountId, agent.Symbol, agent.Headquarters, agent.Credits, agent.Token)
 	return err
 }
 
 // GetAgentByName devuelve el agente por su nombre desde la base de datos
 func (db *DB) GetAgentByName(name string) (*entities.Agent, error) {
-	query := `SELECT id, name, symbol, headquarters, credits, token FROM agents WHERE name = ?`
+	name = strings.ToUpper(name)
+	query := `SELECT id, accountId, symbol, headquarters, credits, token FROM agents WHERE symbol = ?`
 	row := db.Conn.QueryRow(query, name)
 	var agent entities.Agent
 
-	err := row.Scan(&agent.ID, &agent.Name, &agent.Symbol, &agent.Headquarters, &agent.Credits, &agent.Token)
+	err := row.Scan(&agent.ID, &agent.AccountId, &agent.Symbol, &agent.Headquarters, &agent.Credits, &agent.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +63,7 @@ func (db *DB) GetAgentByName(name string) (*entities.Agent, error) {
 
 // GetAgentsAndTokens Listar agentes y sus tokens
 func (db *DB) GetAgentsAndTokens() (*entities.Agents, error) {
-	query := `SELECT name, token FROM agents`
+	query := `SELECT symbol, token FROM agents`
 	rows, err := db.Conn.Query(query)
 	if err != nil {
 		return nil, err
@@ -70,7 +72,7 @@ func (db *DB) GetAgentsAndTokens() (*entities.Agents, error) {
 	var agents entities.Agents
 	var agent entities.Agent
 	for rows.Next() {
-		err := rows.Scan(&agent.Name, &agent.Token)
+		err := rows.Scan(&agent.Symbol, &agent.Token)
 		if err != nil {
 			return nil, err
 		}
