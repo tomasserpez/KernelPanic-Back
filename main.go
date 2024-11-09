@@ -4,6 +4,7 @@ import (
 	"KernelPanic-Back/controllers"
 	"KernelPanic-Back/db"
 	"KernelPanic-Back/services"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	"log"
@@ -22,6 +23,7 @@ func main() {
 
 	// Configuramos el router de GIN
 	router := gin.Default()
+	router.Use(cors.Default())
 	agentController := controllers.NewAgentController(database, agentService)
 	contractsController := controllers.NewContractsController(database, contractsService)
 
