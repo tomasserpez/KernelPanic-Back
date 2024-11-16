@@ -1,4 +1,3 @@
-// services/agent_service.go
 package services
 
 import (
@@ -7,17 +6,15 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-const baseURL = "https://api.spacetraders.io/v2"
-
 // AgentService provee metodos de interacción con la API
 type AgentService struct {
 	client *resty.Client
 }
 
 // NewAgentService crea una nueva instancia de agentService
-func NewAgentService() *AgentService {
+func NewAgentService(client *resty.Client) *AgentService {
 	return &AgentService{
-		client: resty.New(),
+		client: client,
 	}
 }
 
@@ -30,13 +27,13 @@ func (s *AgentService) RegisterAgent(username string, faction string) (*entities
 			"faction": faction,
 		}).
 		SetResult(response).
-		Post(baseURL + "/register")
+		Post(BASEURL + "/register")
 
 	if err != nil {
 		return nil, err
 	}
 	if resp.IsError() {
-		return nil, fmt.Errorf("Error al registrar el agente: %s", resp.Status())
+		return nil, fmt.Errorf("error al registrar el agente: %s", resp.Status())
 	}
 	return &response.Data, nil
 }
@@ -47,13 +44,13 @@ func (s *AgentService) GetAgentInfo(token string) (*entities.Agent, error) {
 	resp, err := s.client.R().
 		SetAuthToken(token).
 		SetResult(response).
-		Get(baseURL + "/my/agent")
+		Get(BASEURL + "/my/agent")
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.IsError() {
-		return nil, fmt.Errorf("Error al procesar la información del agente: %s", resp.Status())
+		return nil, fmt.Errorf("error al procesar la información del agente: %s", resp.Status())
 	}
 	return &response.Data, nil
 }

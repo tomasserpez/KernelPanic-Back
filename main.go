@@ -1,45 +1,45 @@
 package main
 
 import (
+	"KernelPanic-Back/controllers"
 	"KernelPanic-Back/db"
 	"KernelPanic-Back/services"
-	"fmt"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/go-resty/resty/v2"
 	"log"
 )
 
 func main() {
-	// Inisializamos la DB
+	// Inicializamos la DB
 	database := db.NewDB("./agents.db")
 	defer database.Conn.Close()
 
+	restyClient := resty.New()
+
 	//Inicializamos el servicio de agente
-	agentService := services.NewAgentService()
+	agentService := services.NewAgentService(restyClient)
+	contractsService := services.NewContractService(restyClient)
 
-	username := "PREGONI"
-	//faction := "COSMIC"
-	//
-	//regResp, err := agentService.RegisterAgent(username, faction)
-	//if err != nil {
-	//	log.Fatalf("Error registrando el agente: %v", err)
-	//}
-	//regResp.Agent.Token = regResp.Token
-	//err = database.SaveAgent(&regResp.Agent)
-	//if err != nil {
-	//	log.Fatalf("Error guardando al agente en la base de datos: %v", err)
-	//}
-	//fmt.Printf("Agente nuevo registrado con el token: %s\n", regResp.Token)
-	//fmt.Printf("Detalles del agente: %+v\n", regResp.Agent)
+	// Configuramos el router de GIN
+	router := gin.Default()
+	router.Use(cors.Default())
+	agentController := controllers.NewAgentController(database, agentService)
+	contractsController := controllers.NewContractsController(database, contractsService)
 
-	//Ejemplo
-	savedAgent, err := database.GetAgentByName(username)
-	if err != nil {
-		log.Fatalf("Error al hacer un fetching del agente en la DB: %v", err)
+	// Definimos las rutas
+	//Agent
+	router.POST("/agents/register", agentController.RegisterAgent)
+	router.GET("/agents", agentController.GetAgents)
+	router.GET("/agents/name/:name", agentController.GetAgentByName)
+	router.GET("/agents/token/:token", agentController.GetAgentByToken)
+
+	//Contracts
+	router.GET("/:agentName/contracts", contractsController.GetAgentContractsByName)
+	router.POST("/:agentName/contracts/:contractId/accept", contractsController.AcceptAgentContract)
+
+	// Iniciamos el servidor
+	if err := router.Run(":8080"); err != nil {
+		log.Fatalf("Error al iniciar el servidor: %v", err)
 	}
-
-	agentInfo, err := agentService.GetAgentInfo(savedAgent.Token)
-	if err != nil {
-		log.Fatalf("Error haciendo fetching de la información del agente: %v", err)
-	}
-
-	fmt.Printf("Info del agente: %+v\n", agentInfo)
 }
