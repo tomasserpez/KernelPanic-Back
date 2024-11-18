@@ -28,7 +28,8 @@ func NewDB(filepath string) *DB {
 	    symbol TEXT,
 	    headquarters TEXT,
 	    credits INTEGER,
-	    token TEXT
+	    token TEXT,
+	    firebaseUid TEXT
   );`
 	if _, err := conn.Exec(query); err != nil {
 		log.Fatalf("Fallo al crear la tabla agente: %v", err)
@@ -38,8 +39,8 @@ func NewDB(filepath string) *DB {
 
 // SaveAgent guarda el agente en la base de datos SQLite
 func (db *DB) SaveAgent(agent *entities.Agent) error {
-	query := `INSERT INTO agents (accountId, symbol, headquarters, credits, token) VALUES (?,?,?,?,?)`
-	_, err := db.Conn.Exec(query, agent.AccountId, agent.Symbol, agent.Headquarters, agent.Credits, agent.Token)
+	query := `INSERT INTO agents (accountId, symbol, headquarters, credits, token, firebaseUid) VALUES (?,?,?,?,?,?)`
+	_, err := db.Conn.Exec(query, agent.AccountId, agent.Symbol, agent.Headquarters, agent.Credits, agent.Token, agent.FirebaseUid)
 	return err
 }
 
@@ -65,6 +66,29 @@ func (db *DB) GetAgentByName(name string) (*entities.Agent, error) {
 func (db *DB) GetAgentsAndTokens() (*entities.Agents, error) {
 	query := `SELECT symbol, token FROM agents`
 	rows, err := db.Conn.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var agents entities.Agents
+	var agent entities.Agent
+	for rows.Next() {
+		err := rows.Scan(&agent.Symbol, &agent.Token)
+		if err != nil {
+			return nil, err
+		}
+		agents = append(agents, agent)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &agents, nil
+}
+
+func (db *DB) GetAgentsAndTokensForUser(uid string) (*entities.Agents, error) {
+	query := `SELECT symbol, token FROM agents WHERE firebaseUid = ?`
+	rows, err := db.Conn.Query(query, uid)
 	if err != nil {
 		return nil, err
 	}

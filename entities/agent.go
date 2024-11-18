@@ -15,7 +15,8 @@ type Agent struct {
 	Credits         int    `json:"credits" db:"credits"`
 	StartingFaction string `json:"startingFaction" db:"startingFaction"`
 	ShipCount       int    `json:"shipCount" db:"shipCount"`
-	Token           string `json:"token" db:"token"` // Not part of the API response, used for internal storage
+	Token           string `json:"token" db:"token"`             // Not part of the API response, used for internal storage
+	FirebaseUid     string `json:"firebaseUid" db:"firebaseUid"` // same as above
 
 }
 

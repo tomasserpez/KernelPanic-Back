@@ -29,8 +29,9 @@ func main() {
 
 	// Definimos las rutas
 	//Agent
-	router.POST("/agents/register", agentController.RegisterAgent)
+	router.POST("/agents/register/:uid", agentController.RegisterAgent)
 	router.GET("/agents", agentController.GetAgents)
+	router.GET("/agents/:uid", agentController.GetAgentsForUser)
 	router.GET("/agents/name/:name", agentController.GetAgentByName)
 	router.GET("/agents/token/:token", agentController.GetAgentByToken)
 

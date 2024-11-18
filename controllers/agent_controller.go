@@ -19,6 +19,9 @@ func NewAgentController(db *db.DB, agentService *services.AgentService) *AgentCo
 
 // RegisterAgent maneja la creación de un nuevo agente
 func (ac *AgentController) RegisterAgent(c *gin.Context) {
+
+	firebaseUID := c.Param("uid")
+
 	var input struct {
 		Username string `json:"username" binding:"required"`
 		Faction  string `json:"faction" binding:"required"`
@@ -36,6 +39,7 @@ func (ac *AgentController) RegisterAgent(c *gin.Context) {
 
 	// Guardar el agente en la base de datos
 	regResp.Agent.Token = regResp.Token
+	regResp.Agent.FirebaseUid = firebaseUID
 	if err := ac.db.SaveAgent(&regResp.Agent); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -83,4 +87,15 @@ func (ac *AgentController) GetAgentByToken(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, agentInfo)
+}
+
+func (ac *AgentController) GetAgentsForUser(c *gin.Context) {
+	firebaseUID := c.Param("uid")
+	agents, err := ac.db.GetAgentsAndTokensForUser(firebaseUID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, agents)
+
 }
