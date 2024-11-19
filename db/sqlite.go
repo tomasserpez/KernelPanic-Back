@@ -47,11 +47,11 @@ func (db *DB) SaveAgent(agent *entities.Agent) error {
 // GetAgentByName devuelve el agente por su nombre desde la base de datos
 func (db *DB) GetAgentByName(name string) (*entities.Agent, error) {
 	name = strings.ToUpper(name)
-	query := `SELECT id, accountId, symbol, headquarters, credits, token FROM agents WHERE symbol = ?`
+	query := `SELECT id, accountId, symbol, headquarters, credits, token, firebaseUid FROM agents WHERE symbol = ?`
 	row := db.Conn.QueryRow(query, name)
 	var agent entities.Agent
 
-	err := row.Scan(&agent.ID, &agent.AccountId, &agent.Symbol, &agent.Headquarters, &agent.Credits, &agent.Token)
+	err := row.Scan(&agent.ID, &agent.AccountId, &agent.Symbol, &agent.Headquarters, &agent.Credits, &agent.Token, &agent.FirebaseUid)
 	if err != nil {
 		return nil, err
 	}
