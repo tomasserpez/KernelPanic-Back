@@ -30,6 +30,19 @@ go run main.go
 
 Esto iniciará la aplicación usando el puerto 8080
 
+## Consideraciones para Windows
+
+Si el sistema operativo es Windows se debe tener instalado y en el PATH el compilador gcc, y se debe configurar la variable de entorno de Go `CGO_ENABLED` con el valor `1`. Para esto, debemos correr el siguiente comando en una terminal:
+
+```bash
+go env -w CGO_ENABLED=1
+```
+Luego verificamos las variables de entorno con el comando:
+
+```bash
+go env
+```
+
 ## Uso
 
 La aplicación está configurada para usar el puerto 8080, podemos acceder a los endpoints publicados a travez de `http://localhost:8080`
